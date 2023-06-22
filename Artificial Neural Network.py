@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ### Ayushi Malaviya 
-# 
-
-# In[ ]:
-
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -18,54 +12,23 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 
-# In[2]:
-
-
 data = pd.read_csv('wisc_bc_ContinuousVar.csv', na_values = '?')
-
-
-# In[3]:
-
-
 data.shape
-
-
-# In[4]:
-
-
 data.isnull().sum()
-
-
-# In[5]:
-
-
 data.head(10)
 
-
-# In[6]:
-
-
+#Visualization
 sns.countplot(x='diagnosis', data=data)#biased classification
 
-
-# In[7]:
 
 
 X = data.loc[:,data.columns.drop(['diagnosis'])]
 y = data['diagnosis']
 
-
-# In[8]:
-
-
 #to have look if id is important feature or not
 rf = RandomForestClassifier() 
 #random forest takes care of categorical values, hence y is not labelencoded.
 rf.fit(X, y)
-
-
-# In[9]:
-
 
 rf.feature_importances_
 
@@ -73,28 +36,14 @@ feat_importances = pd.Series(rf.feature_importances_, index=X.columns)
 feat_importances.nlargest(40).plot(kind='bar')
 
 
-# In[10]:
-
-
 #id has very low importance before and after scaling and intuitvely it is not relevant. hence deleting
 X = X.loc[:,X.columns.drop(['id'])]
-
-
-# In[11]:
-
 
 #applied labelencoder to classification column
 Encoder = LabelEncoder()
 y = Encoder.fit_transform(y) #Malignant = 1 and Benign = 0
 
-
-# In[12]:
-
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
-
-
-# In[13]:
 
 
 #scaling the continuous and higher values columns into reduced range
@@ -103,17 +52,9 @@ X_train = sc_feature.fit_transform(X_train.values)
 X_test = sc_feature.transform(X_test.values)
 print(X_train.shape, X_test.shape)
 
-
-# In[14]:
-
-
 #after scaling important feature observation
 rf1 = RandomForestClassifier() 
 rf1.fit(X_train, y_train)
-
-
-# In[15]:
-
 
 rf1.feature_importances_
 
@@ -122,9 +63,6 @@ feat_importances.nlargest(40).plot(kind='bar')
 
 
 # #### Model Development
-
-# In[16]:
-
 
 #Now dense is use to define hidden and output layer separately
 ann_model_0 = 'Hidden layer 1 = Relu, Hidden_layer 2 =  Relu, Output_Layer: Sigmoid'
@@ -139,9 +77,6 @@ ann0.compile(optimizer='adam',loss='binary_crossentropy', metrics=[keras.metrics
 model0 = ann0.fit(X_train, y_train, epochs=80, batch_size = 10)
 
 
-# In[17]:
-
-
 ann_model_1 = 'Hidden layer 1 = Relu, Hidden_layer 2 =  Relu, Output_Layer: Relu'
 ann1 = keras.models.Sequential()
 ann1.add(keras.layers.Dense(5, input_dim=30, activation='relu'))
@@ -149,9 +84,6 @@ ann1.add(keras.layers.Dense(5, activation='relu'))
 ann1.add(keras.layers.Dense(1, activation='relu'))
 ann1.compile(optimizer='adam',loss='binary_crossentropy', metrics=['accuracy'])
 model1 = ann1.fit(X_train, y_train, epochs=80, batch_size = 10)
-
-
-# In[21]:
 
 
 ann_model_2 = 'Hidden layer 1 = sigmoid, Hidden_layer 2 =  sigmoid, Output_Layer: Softmax'
@@ -163,9 +95,6 @@ ann2.add(keras.layers.Dropout(0.2))
 ann2.add(keras.layers.Dense(1, activation='softmax'))
 ann2.compile(optimizer='adam',loss='binary_crossentropy', metrics=['accuracy'])
 model2 = ann2.fit(X_train, y_train, epochs=80, batch_size = 10)
-
-
-# In[19]:
 
 
 ann_model_3 = 'Hidden layer 1 = Sigmoid, Hidden_layer 2 =  Sigmoid, Output_Layer: Sigmoid'
@@ -180,9 +109,6 @@ model3 = ann3.fit(X_train, y_train, epochs=80, batch_size = 10)
 # Randomly selected activation function for random epochs which runs model for that many times as  well as batch which divides the data into 10 batches and updates the model 10 times 
 
 # ### Model validation
-
-# In[22]:
-
 
 dic = {ann_model_0:ann0, ann_model_1:ann1, ann_model_2:ann2,ann_model_3:ann3}
 for i, j in dic.items():
